@@ -7,7 +7,7 @@ interface FloodFillAlgorithm {
 
     val isStarted: Boolean
 
-    fun start(field: Bitmap, point: Point, targetColor: Int)
+    fun start(field: Bitmap, point: Point, replacementColor: Int)
 
     fun step(): Boolean
 

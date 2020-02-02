@@ -20,8 +20,9 @@ class FloodFillView : View {
     private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val bitmapSrcRect = Rect()
     private val bitmapDstRect = Rect()
-    private var currentAlgorithm: FloodFillAlgorithm = SimpleFloodFillAlgorithm()
     private var bitmapScale: Float = 1f
+    private var algorithm: FloodFillAlgorithm = SimpleFloodFillAlgorithm()
+    private var itersPerFrame: Int = 1
 
     constructor(context: Context) : super(context)
 
@@ -34,13 +35,22 @@ class FloodFillView : View {
         super(context, attrs, defStyleAttr, defStyleRes)
 
     fun setField(bitmap: Bitmap) {
-        currentAlgorithm.stop()
+        algorithm.stop()
         this.bitmap = bitmap
         requestLayout()
     }
 
+    fun setSpeed(speed: Int) {
+        itersPerFrame = speed
+    }
+
+    fun setAlgorithm(algorithm: FloodFillAlgorithm) {
+        this.algorithm.stop()
+        this.algorithm = algorithm
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (currentAlgorithm.isStarted) {
+        if (algorithm.isStarted) {
             return true
         }
 
@@ -48,11 +58,11 @@ class FloodFillView : View {
         val y = event.y
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                val point = bitmap.convertPointToLocal(Point(x.toInt(), y.toInt()))
+                val point = bitmap.convertToLocalPoint(Point(x.toInt(), y.toInt()))
                 if (point != null) {
                     val sourceColor = bitmap[point.x, point.y]
                     val targetColor = if (Color.red(sourceColor) == 0) Color.WHITE else Color.BLACK
-                    currentAlgorithm.start(bitmap, point, targetColor)
+                    algorithm.start(bitmap, point, targetColor)
                     invalidate()
                 }
             }
@@ -83,21 +93,32 @@ class FloodFillView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        var isRedraw = false
+
+        if (algorithm.isStarted) {
+            for (i in 0 until itersPerFrame) {
+                if (algorithm.step()) {
+                    isRedraw = true
+                } else {
+                    algorithm.stop()
+                    isRedraw = false
+                }
+            }
+        }
+
         canvas.drawBitmap(bitmap, bitmapSrcRect, bitmapDstRect, bitmapPaint)
 
-        if (currentAlgorithm.step()) {
+        if (isRedraw) {
             invalidate()
-        } else {
-            currentAlgorithm.stop()
         }
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        currentAlgorithm.stop()
+        algorithm.stop()
     }
 
-    private fun Bitmap.convertPointToLocal(point: Point): Point? {
+    private fun Bitmap.convertToLocalPoint(point: Point): Point? {
         val x = ((point.x - bitmapDstRect.left) / bitmapScale).toInt()
         val y = ((point.y - bitmapDstRect.top) / bitmapScale).toInt()
         return if (x >= 0 && y >= 0 && x < width && y < height) Point(x, y) else null

@@ -2,7 +2,6 @@ package ru.ilyasshafigin.floodfill.algorithm
 
 import android.graphics.Bitmap
 import android.graphics.Point
-import android.util.Log
 import androidx.core.graphics.get
 import androidx.core.graphics.set
 import java.util.*
@@ -12,22 +11,22 @@ class SimpleFloodFillAlgorithm : FloodFillAlgorithm {
     override var isStarted: Boolean = false
         private set
     private lateinit var field: Bitmap
-    private var replacementColor: Int = 0
     private var targetColor: Int = 0
+    private var replacementColor: Int = 0
     private val stack = LinkedList<Point>()
+    private lateinit var pixelsChecked: BooleanArray
 
-    override fun start(field: Bitmap, point: Point, targetColor: Int) {
+    override fun start(field: Bitmap, point: Point, replacementColor: Int) {
         if (isStarted) return
 
-        this.isStarted = true
         this.field = field
-        this.replacementColor = field[point.x, point.y]
-        this.targetColor = targetColor
-        this.stack.clear()
-        this.stack += point
+        this.replacementColor = replacementColor
 
-        Log.d(TAG, "targetColor=#${String.format("#%06X", 0xFFFFFF and targetColor)}," +
-            " replacementColor=#${String.format("#%06X", 0xFFFFFF and replacementColor)}")
+        targetColor = field[point.x, point.y]
+        pixelsChecked = BooleanArray(field.width * field.height)
+        stack.clear()
+        stack += point
+        isStarted = true
     }
 
     override fun step(): Boolean {
@@ -35,26 +34,13 @@ class SimpleFloodFillAlgorithm : FloodFillAlgorithm {
             return false
         }
 
-        Log.d(TAG, "stack size: ${stack.size}")
-
         val p = stack.pop()
-        field[p.x, p.y] = targetColor
+        field[p.x, p.y] = replacementColor
 
-        if (p.x + 1 < field.width && field[p.x + 1, p.y] == replacementColor) {
-            stack += Point(p.x + 1, p.y)
-        }
-
-        if (p.x - 1 >= 0 && field[p.x - 1, p.y] == replacementColor) {
-            stack += Point(p.x - 1, p.y)
-        }
-
-        if (p.y + 1 < field.height && field[p.x, p.y + 1] == replacementColor) {
-            stack += Point(p.x, p.y + 1)
-        }
-
-        if (p.y - 1 >= 0 && field[p.x, p.y - 1] == replacementColor) {
-            stack += Point(p.x, p.y - 1)
-        }
+        checkPixelAndAddToStack(p.x + 1, p.y)
+        checkPixelAndAddToStack(p.x - 1, p.y)
+        checkPixelAndAddToStack(p.x, p.y + 1)
+        checkPixelAndAddToStack(p.x, p.y - 1)
 
         return stack.isNotEmpty()
     }
@@ -63,8 +49,14 @@ class SimpleFloodFillAlgorithm : FloodFillAlgorithm {
         isStarted = false
     }
 
-    companion object {
+    private fun checkPixelAndAddToStack(x: Int, y: Int) {
+        if (x < 0 || x >= field.width || y < 0 || y >= field.height) return
 
-        private const val TAG = "SimpleFloodFillAlg"
+        val index = field.width * y + x
+        if (pixelsChecked[index]) return
+        if (field[x, y] != targetColor) return
+
+        pixelsChecked[index] = true
+        stack += Point(x, y)
     }
 }
