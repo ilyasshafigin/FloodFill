@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Flood Fill</string>
+
+    <string name="width">Width</string>
+    <string name="height">Height</string>
+    <string name="speed">Speed</string>
+    <string name="size_divider">X</string>
+    <string name="generate">Generate</string>
 </resources>
