@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/verticalGuideline"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <ru.ilyasshafigin.floodfill.view.FloodFillView
+        android:id="@+id/floodFillView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatSpinner
+        android:id="@+id/algorithmSpinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/verticalGuideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/sizeBarrier"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="widthEdit,heightEdit,generateButton" />
+
+    <EditText
+        android:id="@+id/widthEdit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:hint="@string/width"
+        android:imeOptions="actionNext"
+        android:inputType="number"
+        android:maxLength="3"
+        app:layout_constraintBottom_toTopOf="@+id/speedBarrier"
+        app:layout_constraintEnd_toStartOf="@+id/sizeDividerText"
+        app:layout_constraintStart_toEndOf="@+id/verticalGuideline" />
+
+    <TextView
+        android:id="@+id/sizeDividerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/size_divider"
+        app:layout_constraintBaseline_toBaselineOf="@+id/widthEdit"
+        app:layout_constraintEnd_toStartOf="@+id/heightEdit"
+        app:layout_constraintStart_toEndOf="@+id/widthEdit" />
+
+    <EditText
+        android:id="@+id/heightEdit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="@string/height"
+        android:imeOptions="actionDone"
+        android:inputType="number"
+        android:maxLength="3"
+        app:layout_constraintBottom_toTopOf="@+id/speedBarrier"
+        app:layout_constraintEnd_toStartOf="@+id/generateButton"
+        app:layout_constraintStart_toEndOf="@+id/sizeDividerText" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/generateButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/generate"
+        app:layout_constraintBottom_toTopOf="@+id/speedBarrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/heightEdit" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/speedBarrier"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="speedSlider,speedLabelText" />
+
+    <TextView
+        android:id="@+id/speedLabelText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/speed"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+        app:layout_constraintBottom_toBottomOf="@+id/speedSlider"
+        app:layout_constraintEnd_toStartOf="@+id/speedSlider"
+        app:layout_constraintStart_toEndOf="@+id/verticalGuideline"
+        app:layout_constraintTop_toTopOf="@+id/speedSlider" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/speedSlider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:stepSize="1"
+        android:valueFrom="1"
+        android:valueTo="120"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/speedLabelText"
+        app:tickColor="@android:color/transparent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

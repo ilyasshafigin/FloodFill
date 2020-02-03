@@ -104,7 +104,9 @@ internal class FloodFillController {
     }
 
     fun onRestore(savedState: FloodFillView.SavedState) {
-        savedState.bitmap?.let { bitmap = it }
+        savedState.bitmap?.let { savedBitmap ->
+            bitmap = savedBitmap
+        }
         itersPerFrame = savedState.itersPerFrame
         algorithmType = savedState.algorithmType
         initAlgorithm()

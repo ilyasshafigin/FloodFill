@@ -56,7 +56,7 @@ class FloodFillView : View {
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        controller.onSizeChanged(width, height)
+        controller.onSizeChanged(measuredWidth, measuredHeight)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -68,16 +68,17 @@ class FloodFillView : View {
     }
 
     override fun onSaveInstanceState(): Parcelable? {
-        val superState = super.onSaveInstanceState()
-        val viewState = SavedState(superState)
-        controller.onSave(viewState)
-        return viewState
+        return SavedState(super.onSaveInstanceState()).apply {
+            controller.onSave(this)
+        }
     }
 
     override fun onRestoreInstanceState(state: Parcelable) {
         if (state is SavedState) {
             super.onRestoreInstanceState(state.superState)
             controller.onRestore(state)
+        } else {
+            super.onRestoreInstanceState(state)
         }
     }
 

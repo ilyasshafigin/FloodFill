@@ -1,10 +1,12 @@
 package ru.ilyasshafigin.floodfill
 
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
@@ -71,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         heightEdit.setOnEditorActionListener { _, action, _ ->
             if (action == EditorInfo.IME_ACTION_DONE) {
                 onGeneratePressed()
+                hideKeyboard()
                 true
             } else {
                 false
@@ -91,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         floodFillView.setField(createCircleBitmap(defaultWidth, defaultHeight))
         floodFillView.setSpeed(defaultSpeed)
         floodFillView.setAlgorithm(FloodFillAlgorithmType.DEFAULT_ALGORITHM)
+        floodFillView.requestLayout()
     }
 
     private fun onGeneratePressed() {
@@ -107,6 +111,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         floodFillView.setField(createCircleBitmap(width, height))
+    }
+
+    fun hideKeyboard() {
+        currentFocus?.let { currentFocus ->
+            val inputMethodManager =
+                getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+        }
     }
 
     private fun createRandomBitmap(width: Int, height: Int): Bitmap {
