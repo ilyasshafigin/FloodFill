@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Flood Fill</string>
+
+    <string name="width">Ширина</string>
+    <string name="height">Высота</string>
+    <string name="speed">Скорость</string>
+    <string name="generate">Сгенерировать</string>
+
+    <string name="wide_algorithm">В ширину</string>
+    <string name="depth_algorithm">В глубину</string>
+    <string name="lines_algorithm">Линиями</string>
+
+    <string name="width_error">Ширина должна быть от 1 до 512</string>
+    <string name="height_error">Высота должны быть от 1 до 512</string>
+</resources>
