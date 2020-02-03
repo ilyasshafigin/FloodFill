@@ -1,10 +1,11 @@
 package ru.ilyasshafigin.floodfill.viewmodel
 
-import ru.ilyasshafigin.floodfill.algorithm.FloodFillAlgorithm
+import ru.ilyasshafigin.floodfill.view.FloodFillAlgorithmType
 
 class AlgorithmViewModel(
     val name: String,
-    val algorithm: FloodFillAlgorithm
+    @FloodFillAlgorithmType
+    val type: Int
 ) {
 
     override fun toString(): String = name

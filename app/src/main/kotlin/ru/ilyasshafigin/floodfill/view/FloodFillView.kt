@@ -3,26 +3,15 @@ package ru.ilyasshafigin.floodfill.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Point
-import android.graphics.Rect
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.graphics.get
-import ru.ilyasshafigin.floodfill.algorithm.FloodFillAlgorithm
-import ru.ilyasshafigin.floodfill.algorithm.SimpleFloodFillAlgorithm
 
 class FloodFillView : View {
 
-    private var bitmap: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565)
-    private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val bitmapSrcRect = Rect()
-    private val bitmapDstRect = Rect()
-    private var bitmapScale: Float = 1f
-    private var algorithm: FloodFillAlgorithm = SimpleFloodFillAlgorithm()
-    private var itersPerFrame: Int = 1
+    private val controller = FloodFillController()
 
     constructor(context: Context) : super(context)
 
@@ -35,22 +24,20 @@ class FloodFillView : View {
         super(context, attrs, defStyleAttr, defStyleRes)
 
     fun setField(bitmap: Bitmap) {
-        algorithm.stop()
-        this.bitmap = bitmap
+        controller.setField(bitmap)
         requestLayout()
     }
 
     fun setSpeed(speed: Int) {
-        itersPerFrame = speed
+        controller.setSpeed(speed)
     }
 
-    fun setAlgorithm(algorithm: FloodFillAlgorithm) {
-        this.algorithm.stop()
-        this.algorithm = algorithm
+    fun setAlgorithm(@FloodFillAlgorithmType algorithmType: Int) {
+        controller.setAlgorithm(algorithmType)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (algorithm.isStarted) {
+        if (!controller.canTouch()) {
             return true
         }
 
@@ -58,11 +45,7 @@ class FloodFillView : View {
         val y = event.y
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                val point = bitmap.convertToLocalPoint(Point(x.toInt(), y.toInt()))
-                if (point != null) {
-                    val sourceColor = bitmap[point.x, point.y]
-                    val targetColor = if (Color.red(sourceColor) == 0) Color.WHITE else Color.BLACK
-                    algorithm.start(bitmap, point, targetColor)
+                if (controller.onTap(x.toInt(), y.toInt())) {
                     invalidate()
                 }
             }
@@ -73,54 +56,58 @@ class FloodFillView : View {
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        val vw = width
-        val vh = height
-        val bw = bitmap.width
-        val bh = bitmap.height
-
-        if (vh * bw > vw * bh) {
-            bitmapScale = vw.toFloat() / bw.toFloat()
-            val h = (bitmapScale * bh).toInt()
-            bitmapDstRect.set(0, (vh - h) / 2, vw, h + (vh - h) / 2)
-        } else {
-            bitmapScale = vh.toFloat() / bh.toFloat()
-            val w = (bitmapScale * bw).toInt()
-            bitmapDstRect.set((vw - w) / 2, 0, (vw - w) / 2 + w, vh)
-        }
-        bitmapSrcRect.set(0, 0, bw, bh)
+        controller.onSizeChanged(width, height)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        var isRedraw = false
-
-        if (algorithm.isStarted) {
-            for (i in 0 until itersPerFrame) {
-                if (algorithm.step()) {
-                    isRedraw = true
-                } else {
-                    algorithm.stop()
-                    isRedraw = false
-                }
-            }
-        }
-
-        canvas.drawBitmap(bitmap, bitmapSrcRect, bitmapDstRect, bitmapPaint)
-
-        if (isRedraw) {
+        if (controller.onDraw(canvas)) {
             invalidate()
         }
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        algorithm.stop()
+    override fun onSaveInstanceState(): Parcelable? {
+        val superState = super.onSaveInstanceState()
+        val viewState = SavedState(superState)
+        controller.onSave(viewState)
+        return viewState
     }
 
-    private fun Bitmap.convertToLocalPoint(point: Point): Point? {
-        val x = ((point.x - bitmapDstRect.left) / bitmapScale).toInt()
-        val y = ((point.y - bitmapDstRect.top) / bitmapScale).toInt()
-        return if (x >= 0 && y >= 0 && x < width && y < height) Point(x, y) else null
+    override fun onRestoreInstanceState(state: Parcelable) {
+        if (state is SavedState) {
+            super.onRestoreInstanceState(state.superState)
+            controller.onRestore(state)
+        }
+    }
+
+    internal class SavedState : BaseSavedState {
+
+        var bitmap: Bitmap? = null
+        var itersPerFrame: Int = 0
+        @FloodFillAlgorithmType
+        var algorithmType: Int = FloodFillAlgorithmType.DEFAULT_ALGORITHM
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        private constructor(parcel: Parcel) : super(parcel) {
+            bitmap = parcel.readParcelable(Bitmap::class.java.classLoader)
+            itersPerFrame = parcel.readInt()
+            algorithmType = parcel.readInt()
+        }
+
+        override fun writeToParcel(out: Parcel, flags: Int) {
+            super.writeToParcel(out, flags)
+            out.writeParcelable(bitmap, flags)
+            out.writeInt(itersPerFrame)
+            out.writeInt(algorithmType)
+        }
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+
+            override fun createFromParcel(parcel: Parcel): SavedState = SavedState(parcel)
+
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
+        }
     }
 }

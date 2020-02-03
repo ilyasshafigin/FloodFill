@@ -6,4 +6,11 @@
     <string name="speed">Speed</string>
     <string name="size_divider">X</string>
     <string name="generate">Generate</string>
+
+    <string name="wide_algorithm">В ширину</string>
+    <string name="depth_algorithm">В глубину</string>
+    <string name="lines_algorithm">Линиями</string>
+
+    <string name="width_error">Width should be from 0 to 512</string>
+    <string name="height_error">Height should be from 0 to 512</string>
 </resources>

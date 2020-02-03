@@ -6,7 +6,7 @@ import androidx.core.graphics.get
 import androidx.core.graphics.set
 import java.util.*
 
-class BasicFloodFillAlgorithm : FloodFillAlgorithm {
+class LinesFloodFillAlgorithm : FloodFillAlgorithm {
 
     override var isStarted: Boolean = false
         private set

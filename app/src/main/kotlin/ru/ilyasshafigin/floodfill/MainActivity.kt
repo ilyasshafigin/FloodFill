@@ -11,8 +11,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.set
 import kotlinx.android.synthetic.main.activity_main.*
-import ru.ilyasshafigin.floodfill.algorithm.BasicFloodFillAlgorithm
-import ru.ilyasshafigin.floodfill.algorithm.SimpleFloodFillAlgorithm
+import ru.ilyasshafigin.floodfill.view.FloodFillAlgorithmType
 import ru.ilyasshafigin.floodfill.viewmodel.AlgorithmViewModel
 import kotlin.math.min
 
@@ -24,26 +23,43 @@ class MainActivity : AppCompatActivity() {
 
         val defaultWidth = 64
         val defaultHeight = 64
+        val defaultSpeed = 20
 
         val algorithmList = listOf(
-            AlgorithmViewModel("Простой, в ширину", SimpleFloodFillAlgorithm()),
-            AlgorithmViewModel("Базовый, линиями", BasicFloodFillAlgorithm())
+            AlgorithmViewModel(
+                getString(R.string.wide_algorithm),
+                FloodFillAlgorithmType.WIDE_ALGORITHM
+            ),
+            AlgorithmViewModel(
+                getString(R.string.depth_algorithm),
+                FloodFillAlgorithmType.DEPTH_ALGORITHM
+            ),
+            AlgorithmViewModel(
+                getString(R.string.lines_algorithm),
+                FloodFillAlgorithmType.LINES_ALGORITHM
+            )
         )
 
-        algorithmSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, algorithmList)
+        algorithmSpinner.adapter =
+            ArrayAdapter(this, android.R.layout.simple_list_item_1, algorithmList)
         algorithmSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
-            override fun onItemSelected(view: AdapterView<*>, itemView: View?, index: Int, id: Long) {
-                floodFillView.setAlgorithm(algorithmList[index].algorithm)
+            override fun onItemSelected(
+                view: AdapterView<*>,
+                itemView: View?,
+                index: Int,
+                id: Long
+            ) {
+                floodFillView.setAlgorithm(algorithmList[index].type)
             }
 
             override fun onNothingSelected(view: AdapterView<*>) {
-                floodFillView.setAlgorithm(algorithmList[0].algorithm)
+                floodFillView.setAlgorithm(FloodFillAlgorithmType.DEFAULT_ALGORITHM)
             }
         }
 
         widthEdit.setText(defaultWidth.toString(), TextView.BufferType.EDITABLE)
-        widthEdit.setOnEditorActionListener { view, action, _ ->
+        widthEdit.setOnEditorActionListener { _, action, _ ->
             if (action == EditorInfo.IME_ACTION_NEXT) {
                 heightEdit.requestFocus(View.FOCUS_UP)
                 true
@@ -52,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         heightEdit.setText(defaultHeight.toString(), TextView.BufferType.EDITABLE)
-        heightEdit.setOnEditorActionListener { view, action, _ ->
+        heightEdit.setOnEditorActionListener { _, action, _ ->
             if (action == EditorInfo.IME_ACTION_DONE) {
                 onGeneratePressed()
                 true
@@ -65,6 +81,7 @@ class MainActivity : AppCompatActivity() {
             onGeneratePressed()
         }
 
+        speedSlider.value = defaultSpeed.toFloat()
         speedSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 floodFillView.setSpeed(value.toInt())
@@ -72,11 +89,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         floodFillView.setField(createCircleBitmap(defaultWidth, defaultHeight))
+        floodFillView.setSpeed(defaultSpeed)
+        floodFillView.setAlgorithm(FloodFillAlgorithmType.DEFAULT_ALGORITHM)
     }
 
     private fun onGeneratePressed() {
-        val width = widthEdit.text.toString().toIntOrNull() ?: 1
-        val height = heightEdit.text.toString().toIntOrNull() ?: 1
+        val width = widthEdit.text.toString().toIntOrNull()
+        if (width == null || width <= 0 || width > 512) {
+            widthEdit.error = getString(R.string.width_error)
+            return
+        }
+
+        val height = heightEdit.text.toString().toIntOrNull()
+        if (height == null || height <= 0 || height > 512) {
+            heightEdit.error = getString(R.string.height_error)
+            return
+        }
+
         floodFillView.setField(createCircleBitmap(width, height))
     }
 
@@ -91,8 +120,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createCircleBitmap(width: Int, height: Int): Bitmap {
-        val px = width / 10
-        val py = height / 10
+        val px = width / 8
+        val py = height / 8
         val hw = width / 2
         val hh = height / 2
         val r = min(hw - px, hh - py)
@@ -100,7 +129,7 @@ class MainActivity : AppCompatActivity() {
         for (x in 0 until bitmap.width) {
             for (y in 0 until bitmap.height) {
                 if ((x - hw) * (x - hw) + (y - hh) * (y - hh) > r * r) {
-                    bitmap[x, y] = Color.BLACK
+                    bitmap[x, y] = if (Math.random() < 0.7) Color.BLACK else Color.WHITE
                 } else {
                     bitmap[x, y] = Color.WHITE
                 }
