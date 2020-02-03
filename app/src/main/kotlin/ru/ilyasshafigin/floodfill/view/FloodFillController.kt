@@ -14,7 +14,11 @@ import ru.ilyasshafigin.floodfill.algorithm.WideFloodFillAlgorithm
 
 internal class FloodFillController {
 
-    private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val bitmapPaint = Paint().apply {
+        isAntiAlias = false
+        isDither = true
+        isFilterBitmap = false
+    }
     private val bitmapSrcRect = Rect()
     private val bitmapDstRect = Rect()
     private var bitmapScale: Float = 1f
